@@ -16,8 +16,18 @@ def health_check(request):
         db_status = f"ERROR: {str(e)}"
         db_engine = "unknown"
     
-    # Railway environment detection
+    # Platform environment detection
     is_railway = bool(os.environ.get('RAILWAY_ENVIRONMENT_NAME') or os.environ.get('RAILWAY_PROJECT_ID'))
+    is_back4app = bool(os.environ.get('BACK4APP_APP_ID') or 'b4a.run' in request.get_host())
+    is_heroku = bool(os.environ.get('DYNO'))
+    
+    platform = 'local'
+    if is_railway:
+        platform = 'railway'
+    elif is_back4app:
+        platform = 'back4app'
+    elif is_heroku:
+        platform = 'heroku'
     
     return JsonResponse({
         'status': 'OK',

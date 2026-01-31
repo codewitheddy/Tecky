@@ -16,12 +16,14 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-# Determine if we're on Railway
+# Determine deployment platform
 IS_RAILWAY = bool(os.environ.get('RAILWAY_ENVIRONMENT_NAME') or os.environ.get('RAILWAY_PROJECT_ID'))
+IS_BACK4APP = bool(os.environ.get('BACK4APP_APP_ID') or os.environ.get('PORT') == '8080')
+IS_HEROKU = bool(os.environ.get('DYNO'))
 
-# Allowed hosts configuration
-if IS_RAILWAY:
-    ALLOWED_HOSTS = ['*']  # Railway handles domain routing
+# Allowed hosts configuration - Always allow all hosts in production
+if IS_RAILWAY or IS_BACK4APP or IS_HEROKU or not DEBUG:
+    ALLOWED_HOSTS = ['*']  # Platform handles domain routing
 else:
     ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
@@ -85,6 +87,24 @@ if IS_RAILWAY and os.environ.get('DATABASE_URL'):
             conn_health_checks=True,
         )
     }
+elif IS_BACK4APP and os.environ.get('DATABASE_URL'):
+    # Back4App PostgreSQL
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+elif IS_HEROKU and os.environ.get('DATABASE_URL'):
+    # Heroku PostgreSQL
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
 else:
     # Local development or fallback
     DATABASES = {
@@ -137,7 +157,7 @@ LOGIN_URL = '/dashboard/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Railway-specific settings
+# Platform-specific settings
 if IS_RAILWAY:
     DEBUG = False
     
@@ -183,14 +203,46 @@ if IS_RAILWAY:
         },
     }
 
-# Heroku-specific settings (keeping for compatibility)
-if 'DYNO' in os.environ:
+elif IS_BACK4APP:
     DEBUG = False
-    ALLOWED_HOSTS = ['*']
     
-    if os.environ.get('DATABASE_URL'):
-        DATABASES['default'] = dj_database_url.config(
-            default=os.environ.get('DATABASE_URL'),
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
+    # Security settings for Back4App
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = False  # Back4App handles SSL at proxy level
+    
+    # Session and CSRF settings
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # Logging configuration
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+        },
+    }
+
+elif IS_HEROKU:
+    DEBUG = False
+    
+    # Security settings for Heroku
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = False
+    
+    # Session and CSRF settings
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
