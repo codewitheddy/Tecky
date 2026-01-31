@@ -113,14 +113,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Security settings for production
 if not DEBUG:
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_REDIRECT_EXEMPT = []
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    # Disable these settings that cause redirect loops on Railway
+    # Railway handles HTTPS at the proxy level
+    # SECURE_BROWSER_XSS_FILTER = True
+    # SECURE_CONTENT_TYPE_NOSNIFF = True
+    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # SECURE_HSTS_SECONDS = 31536000
+    # SECURE_REDIRECT_EXEMPT = []
+    # SECURE_SSL_REDIRECT = True
+    # SESSION_COOKIE_SECURE = True
+    # CSRF_COOKIE_SECURE = True
+    pass
 
 # Login URLs
 LOGIN_URL = '/dashboard/login/'
@@ -142,9 +145,13 @@ if os.environ.get('VERCEL'):
         )
 
 # Railway-specific settings
-if os.environ.get('RAILWAY_ENVIRONMENT'):
+if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID'):
     DEBUG = False
     ALLOWED_HOSTS = ['*']  # Railway handles this
+    
+    # Disable SSL redirect - Railway handles HTTPS at proxy level
+    SECURE_SSL_REDIRECT = False
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     
     # Railway automatically provides DATABASE_URL for PostgreSQL
     if os.environ.get('DATABASE_URL'):
