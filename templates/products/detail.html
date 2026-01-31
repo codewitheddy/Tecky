@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Tecky Collections{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <!-- Main Image -->
+            {% if product.image %}
+                <img src="{{ product.image.url }}" class="img-fluid rounded shadow-sm mb-3" alt="{{ product.name }}">
+            {% else %}
+                <div class="bg-light rounded d-flex align-items-center justify-content-center shadow-sm mb-3" style="height: 400px;">
+                    <i class="fas fa-image fa-5x text-muted"></i>
+                </div>
+            {% endif %}
+            
+            <!-- Additional Images -->
+            {% if product.get_additional_images_list %}
+                <div class="row">
+                    {% for image_url in product.get_additional_images_list %}
+                        <div class="col-4 mb-2">
+                            <img src="{{ image_url }}" class="img-fluid rounded" alt="{{ product.name }} - Additional Image">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="mb-3">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'products:list' %}">Our Work</a></li>
+                        <li class="breadcrumb-item active">{{ product.name }}</li>
+                    </ol>
+                </nav>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <h1 class="display-5 fw-bold text-primary">{{ product.name }}</h1>
+                {% if product.is_featured %}
+                    <span class="badge bg-warning text-dark fs-6">Featured</span>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <span class="badge bg-secondary fs-6">
+                    <i class="fas fa-tag me-1"></i>{{ product.category.name }}
+                </span>
+                <span class="badge bg-info text-dark fs-6 ms-2">
+                    <i class="fas fa-calendar me-1"></i>Completed: {{ product.date_completed }}
+                </span>
+            </div>
+            
+            <div class="mb-4">
+                <h3 class="h5 text-primary">Description</h3>
+                <p class="lead">{{ product.description|linebreaks }}</p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2 d-md-flex mb-4">
+                <a href="{% url 'quotes:existing_product' product.slug %}" class="btn btn-primary btn-lg me-md-2">
+                    <i class="fas fa-quote-right me-2"></i>Request Quote for This Design
+                </a>
+                <a href="https://wa.me/254723835202?text=Hi, I'm interested in {{ product.name }}" 
+                   class="btn btn-success btn-lg whatsapp-btn" target="_blank">
+                    <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                </a>
+            </div>
+            
+            <!-- Additional Info -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-info-circle me-2"></i>What's Included
+                    </h5>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Professional consultation</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Precise measurements</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Quality fabric selection</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Expert craftsmanship</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Perfect fit guarantee</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Timely delivery</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="mt-5">
+        <h2 class="text-primary mb-4">Related Work</h2>
+        <div class="row">
+            {% for related_product in related_products %}
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card product-card h-100 shadow-sm">
+                    {% if related_product.image %}
+                        <img src="{{ related_product.image.url }}" class="card-img-top" alt="{{ related_product.name }}" 
+                             style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                             style="height: 200px;">
+                            <i class="fas fa-image fa-2x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title">{{ related_product.name }}</h6>
+                        <p class="card-text small flex-grow-1">{{ related_product.description|truncatewords:15 }}</p>
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ related_product.get_absolute_url }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View
+                                </a>
+                                <a href="{% url 'quotes:existing_product' related_product.slug %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-quote-right me-1"></i>Quote
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Call to Action -->
+    <div class="text-center mt-5 py-5 bg-light rounded">
+        <h3 class="text-primary mb-4">Ready to Get Started?</h3>
+        <p class="lead mb-4">Contact us today to discuss your tailoring needs or request a custom quote.</p>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a href="{% url 'quotes:custom_project' %}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-plus me-2"></i>Custom Design Request
+            </a>
+            <a href="{% url 'core:contact' %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-envelope me-2"></i>Contact Us
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

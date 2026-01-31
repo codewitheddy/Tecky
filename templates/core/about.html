@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}About Us - Tecky Collections{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-primary">About Tecky Collections</h1>
+                <p class="lead">Premium tailoring services for the modern Kenyan</p>
+            </div>
+            
+            <div class="card shadow-sm mb-5">
+                <div class="card-body p-5">
+                    <h2 class="h3 text-primary mb-4">Our Story</h2>
+                    <p class="mb-4">
+                        Tecky Collections was founded with a simple mission: to provide exceptional tailoring services 
+                        that combine traditional craftsmanship with modern style. We understand that clothing is more 
+                        than just fabric – it's an expression of your personality and confidence.
+                    </p>
+                    
+                    <p class="mb-4">
+                        Based in Kenya, we specialize in creating custom garments that fit perfectly and reflect your 
+                        unique style. From formal business attire to elegant evening wear, wedding outfits to casual 
+                        pieces, we bring your fashion vision to life with meticulous attention to detail.
+                    </p>
+                    
+                    <h3 class="h4 text-primary mb-3">Why Choose Tecky Collections?</h3>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Expert craftsmanship with years of experience</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Personalized service and attention to detail</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Quality fabrics and materials</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Perfect fit guaranteed</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Competitive pricing</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Timely delivery</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-phone fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">Call Us</h5>
+                            <p class="card-text">{{ phone }}</p>
+                            <a href="tel:{{ phone }}" class="btn btn-primary">Call Now</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">Email Us</h5>
+                            <p class="card-text">{{ email }}</p>
+                            <a href="mailto:{{ email }}" class="btn btn-primary">Send Email</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-5">
+                <h3 class="h4 text-primary mb-4">Ready to Start Your Project?</h3>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="{% url 'quotes:custom_project' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i>Request Custom Quote
+                    </a>
+                    <a href="{% url 'products:list' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-eye me-2"></i>View Our Work
+                    </a>
+                    <a href="https://wa.me/254723835202" class="btn btn-success btn-lg whatsapp-btn" target="_blank">
+                        <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

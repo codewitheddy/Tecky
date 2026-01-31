@@ -1,0 +1,270 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Quotes - Tecky Collections Admin{% endblock %}
+{% block page_title %}Quotes Management{% endblock %}
+
+{% block content %}
+<!-- Header with Search and Filters -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-5">
+                        <div class="search-box">
+                            <i class="bi bi-search"></i>
+                            <input type="text" name="search" class="form-control" 
+                                   placeholder="Search by client name, phone, or product..." 
+                                   value="{{ search_query }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="status" class="form-select">
+                            <option value="">All Status</option>
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" 
+                                        {% if status_filter == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="quote_type" class="form-select">
+                            <option value="">All Types</option>
+                            {% for value, label in quote_type_choices %}
+                                <option value="{{ value }}" 
+                                        {% if quote_type_filter == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-funnel"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                {% if search_query or status_filter or quote_type_filter %}
+                    <div class="mt-2">
+                        <a href="{% url 'dashboard:quotes' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-x"></i> Clear Filters
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="stat-card warning">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon">
+                    <i class="bi bi-file-text"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="text-muted small">Total Quotes</div>
+                    <div class="h4 mb-0">{{ total_quotes }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quotes Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">
+            {% if search_query or status_filter or quote_type_filter %}
+                Filtered Quotes
+            {% else %}
+                All Quotes
+            {% endif %}
+        </h6>
+        <a href="/admin/quotes/quoterequest/add/" class="btn btn-success btn-sm">
+            <i class="bi bi-plus"></i> Add New Quote
+        </a>
+    </div>
+    
+    <div class="card-body p-0">
+        {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Quote #</th>
+                            <th>Client</th>
+                            <th>Type & Product</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quote in page_obj %}
+                            <tr>
+                                <td>
+                                    <strong>#{{ quote.id }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {% if quote.quote_type == 'existing' %}
+                                            <i class="bi bi-box text-info"></i> Existing
+                                        {% else %}
+                                            <i class="bi bi-palette text-warning"></i> Custom
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                             style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                            {{ quote.client.full_name|first }}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ quote.client.full_name }}</h6>
+                                            <small class="text-muted">
+                                                <i class="bi bi-telephone"></i> {{ quote.client.phone_number }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if quote.product %}
+                                        <div>
+                                            <strong>{{ quote.product.name }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ quote.product.category.name }}</small>
+                                        </div>
+                                    {% else %}
+                                        <div>
+                                            <strong>Custom Project</strong>
+                                            <br>
+                                            <small class="text-muted">{{ quote.custom_description|truncatewords:5 }}</small>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if quote.fabric_preference %}
+                                        <div class="mt-1">
+                                            <small class="badge bg-light text-dark">
+                                                <i class="bi bi-palette2"></i> {{ quote.fabric_preference|truncatewords:3 }}
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if quote.status == 'pending' %}warning{% elif quote.status == 'reviewed' %}info{% elif quote.status == 'quoted' %}primary{% elif quote.status == 'accepted' %}success{% elif quote.status == 'declined' %}danger{% endif %}">
+                                        {{ quote.get_status_display }}
+                                    </span>
+                                    
+                                    {% if quote.status == 'pending' %}
+                                        <br>
+                                        <small class="text-warning">
+                                            <i class="bi bi-clock"></i> Needs attention
+                                        </small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div>{{ quote.created_at|date:"M d, Y" }}</div>
+                                    <small class="text-muted">{{ quote.created_at|timesince }} ago</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'dashboard:quote_detail' quote.id %}" 
+                                           class="btn btn-sm btn-outline-primary" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="/admin/quotes/quoterequest/{{ quote.id }}/change/" 
+                                           class="btn btn-sm btn-outline-secondary" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="https://wa.me/{{ quote.client.phone_number|cut:'+' }}?text={{ quote.get_whatsapp_message|urlencode }}" 
+                                           target="_blank" class="btn btn-sm btn-outline-success" title="WhatsApp">
+                                            <i class="bi bi-whatsapp"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div class="card-footer">
+                    <nav aria-label="Quotes pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if quote_type_filter %}&quote_type={{ quote_type_filter }}{% endif %}">
+                                        <i class="bi bi-chevron-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if quote_type_filter %}&quote_type={{ quote_type_filter }}{% endif %}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if quote_type_filter %}&quote_type={{ quote_type_filter }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if quote_type_filter %}&quote_type={{ quote_type_filter }}{% endif %}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if quote_type_filter %}&quote_type={{ quote_type_filter }}{% endif %}">
+                                        <i class="bi bi-chevron-double-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} quotes
+                        </small>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-file-text display-1 text-muted"></i>
+                <h5 class="mt-3">
+                    {% if search_query or status_filter or quote_type_filter %}
+                        No quotes found
+                    {% else %}
+                        No quotes yet
+                    {% endif %}
+                </h5>
+                <p class="text-muted">
+                    {% if search_query or status_filter or quote_type_filter %}
+                        Try adjusting your filters or <a href="{% url 'dashboard:quotes' %}">view all quotes</a>.
+                    {% else %}
+                        Quote requests will appear here when clients submit them.
+                    {% endif %}
+                </p>
+                <a href="/admin/quotes/quoterequest/add/" class="btn btn-primary">
+                    <i class="bi bi-plus"></i> Add First Quote
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

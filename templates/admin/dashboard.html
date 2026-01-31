@@ -1,0 +1,290 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Dashboard - Tecky Collections Admin{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card primary">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="text-muted small">Total Clients</div>
+                    <div class="h4 mb-0">{{ stats.total_clients }}</div>
+                    <small class="text-success">
+                        <i class="bi bi-arrow-up"></i> +{{ stats.new_clients_this_week }} this week
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card secondary">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon">
+                    <i class="bi bi-box"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="text-muted small">Products</div>
+                    <div class="h4 mb-0">{{ stats.total_products }}</div>
+                    <small class="text-info">
+                        {{ stats.featured_products }} featured
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card warning">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon">
+                    <i class="bi bi-file-text"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="text-muted small">Total Quotes</div>
+                    <div class="h4 mb-0">{{ stats.total_quotes }}</div>
+                    <small class="text-warning">
+                        +{{ stats.quotes_this_month }} this month
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card danger">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="ms-3">
+                    <div class="text-muted small">Pending Quotes</div>
+                    <div class="h4 mb-0">{{ stats.pending_quotes }}</div>
+                    <small class="text-danger">
+                        Needs attention
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Monthly Trends</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyTrendsChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Quote Status Distribution</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Recent Quotes</h6>
+                <a href="{% url 'dashboard:quotes' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_quotes %}
+                    <div class="list-group list-group-flush">
+                        {% for quote in recent_quotes %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ quote.client.full_name }}</h6>
+                                        <p class="mb-1 small text-muted">
+                                            {% if quote.product %}
+                                                {{ quote.product.name }}
+                                            {% else %}
+                                                Custom Project
+                                            {% endif %}
+                                        </p>
+                                        <small class="text-muted">{{ quote.created_at|timesince }} ago</small>
+                                    </div>
+                                    <span class="badge bg-{% if quote.status == 'pending' %}warning{% elif quote.status == 'accepted' %}success{% elif quote.status == 'declined' %}danger{% else %}info{% endif %}">
+                                        {{ quote.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-file-text display-4"></i>
+                        <p>No recent quotes</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Recent Clients</h6>
+                <a href="{% url 'dashboard:clients' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_clients %}
+                    <div class="list-group list-group-flush">
+                        {% for client in recent_clients %}
+                            <div class="list-group-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        {{ client.full_name|first }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">{{ client.full_name }}</h6>
+                                        <small class="text-muted">{{ client.phone_number }}</small>
+                                        <br>
+                                        <small class="text-muted">{{ client.created_at|timesince }} ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-people display-4"></i>
+                        <p>No recent clients</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Recent Products</h6>
+                <a href="{% url 'dashboard:products' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_products %}
+                    <div class="list-group list-group-flush">
+                        {% for product in recent_products %}
+                            <div class="list-group-item">
+                                <div class="d-flex align-items-center">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                                             class="rounded me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                            <i class="bi bi-image"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-0">{{ product.name }}</h6>
+                                        <small class="text-muted">{{ product.category.name }}</small>
+                                        {% if product.is_featured %}
+                                            <span class="badge bg-warning ms-2">Featured</span>
+                                        {% endif %}
+                                        <br>
+                                        <small class="text-muted">{{ product.created_at|timesince }} ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-box display-4"></i>
+                        <p>No recent products</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Monthly Trends Chart
+    const monthlyCtx = document.getElementById('monthlyTrendsChart').getContext('2d');
+    const monthlyChart = new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: {{ monthly_quotes|safe }}.map(item => item.month),
+            datasets: [{
+                label: 'Quotes',
+                data: {{ monthly_quotes|safe }}.map(item => item.count),
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Status Distribution Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    const statusData = {{ quote_status_data|safe }};
+    const statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: statusData.map(item => item.status.charAt(0).toUpperCase() + item.status.slice(1)),
+            datasets: [{
+                data: statusData.map(item => item.count),
+                backgroundColor: [
+                    '#f39c12',  // pending - warning
+                    '#3498db',  // reviewed - info
+                    '#27ae60',  // quoted - success
+                    '#2ecc71',  // accepted - success
+                    '#e74c3c'   // declined - danger
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Custom Project Quote - Tecky Collections{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-primary">Custom Project Quote</h1>
+                <p class="lead">Tell us about your custom tailoring project and we'll provide a personalized quote</p>
+            </div>
+            
+            <!-- Info Banner -->
+            <div class="alert alert-info shadow-sm mb-4">
+                <div class="d-flex">
+                    <i class="fas fa-lightbulb fa-2x text-info me-3"></i>
+                    <div>
+                        <h5 class="alert-heading">Custom Design Process</h5>
+                        <p class="mb-0">
+                            Our custom design service includes consultation, design sketches, fabric selection, 
+                            precise measurements, and expert craftsmanship. We'll work with you every step of the way 
+                            to bring your vision to life.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quote Form -->
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Client Information -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-user me-2"></i>Your Information
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ quote_form.full_name.id_for_label }}" class="form-label">Full Name *</label>
+                                {{ quote_form.full_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ quote_form.phone_number.id_for_label }}" class="form-label">Phone Number *</label>
+                                {{ quote_form.phone_number }}
+                                <div class="form-text">We'll contact you via phone or WhatsApp</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ quote_form.email.id_for_label }}" class="form-label">Email (Optional)</label>
+                            {{ quote_form.email }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Project Details -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-clipboard-list me-2"></i>Project Details
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="{{ quote_form.custom_description.id_for_label }}" class="form-label">Project Description *</label>
+                            {{ quote_form.custom_description }}
+                            <div class="form-text">
+                                Describe your custom project in detail. Include style preferences, occasion, 
+                                specific features you want, and any inspiration you have.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ quote_form.fabric_preference.id_for_label }}" class="form-label">Fabric Preference *</label>
+                            {{ quote_form.fabric_preference }}
+                            <div class="form-text">e.g., Cotton, Silk, Polyester blend, Wool, Linen</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ quote_form.reference_image.id_for_label }}" class="form-label">Reference Image (Optional)</label>
+                            {{ quote_form.reference_image }}
+                            <div class="form-text">Upload an image that shows the style or design you have in mind</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ quote_form.additional_notes.id_for_label }}" class="form-label">Additional Requirements</label>
+                            {{ quote_form.additional_notes }}
+                            <div class="form-text">Any special requirements, timeline, or other details</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Measurements -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-ruler me-2"></i>Your Measurements (in inches)
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Measurement Tips:</strong> For best results, have someone help you take measurements. 
+                            Wear fitted clothing and measure over your undergarments. We'll verify these during consultation.
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ measurements_form.chest.id_for_label }}" class="form-label">Chest *</label>
+                                {{ measurements_form.chest }}
+                                <div class="form-text">Around the fullest part of your chest</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ measurements_form.waist.id_for_label }}" class="form-label">Waist *</label>
+                                {{ measurements_form.waist }}
+                                <div class="form-text">Around your natural waistline</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ measurements_form.hips.id_for_label }}" class="form-label">Hips *</label>
+                                {{ measurements_form.hips }}
+                                <div class="form-text">Around the fullest part of your hips</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ measurements_form.shoulder.id_for_label }}" class="form-label">Shoulder *</label>
+                                {{ measurements_form.shoulder }}
+                                <div class="form-text">From shoulder point to shoulder point</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ measurements_form.sleeve_length.id_for_label }}" class="form-label">Sleeve Length *</label>
+                                {{ measurements_form.sleeve_length }}
+                                <div class="form-text">From shoulder to wrist</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ measurements_form.full_length.id_for_label }}" class="form-label">Full Length *</label>
+                                {{ measurements_form.full_length }}
+                                <div class="form-text">From shoulder to desired hem</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ measurements_form.additional_notes.id_for_label }}" class="form-label">Measurement Notes</label>
+                            {{ measurements_form.additional_notes }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Submit -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <button type="submit" class="btn btn-primary btn-lg me-md-2">
+                        <i class="fas fa-paper-plane me-2"></i>Submit Custom Quote Request
+                    </button>
+                    <a href="{% url 'core:home' %}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Home
+                    </a>
+                </div>
+            </form>
+            
+            <!-- What Happens Next -->
+            <div class="card shadow-sm mt-5">
+                <div class="card-header bg-success text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>What Happens Next?
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-phone fa-2x text-primary mb-2"></i>
+                            <h6>1. We Contact You</h6>
+                            <p class="small">We'll call or WhatsApp you within 24 hours to discuss your project</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-comments fa-2x text-primary mb-2"></i>
+                            <h6>2. Consultation</h6>
+                            <p class="small">We'll refine the design details and confirm measurements</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-file-invoice fa-2x text-primary mb-2"></i>
+                            <h6>3. Quote Provided</h6>
+                            <p class="small">You'll receive a detailed quote with timeline and pricing</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Info -->
+            <div class="text-center mt-4 py-4 bg-light rounded">
+                <h5 class="text-primary mb-3">Need Help?</h5>
+                <p class="mb-3">Contact us directly for assistance or any questions about custom projects.</p>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="tel:0723835202" class="btn btn-outline-primary">
+                        <i class="fas fa-phone me-2"></i>0723835202
+                    </a>
+                    <a href="https://wa.me/254723835202" class="btn btn-success whatsapp-btn" target="_blank">
+                        <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                    </a>
+                    <a href="mailto:teckycollections@gmail.com" class="btn btn-outline-primary">
+                        <i class="fas fa-envelope me-2"></i>Email
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1 @@
+web: gunicorn tecky_collections.wsgi --log-file -
