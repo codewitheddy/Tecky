@@ -16,7 +16,14 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,.vercel.app').split(',')
+# Determine if we're on Railway
+IS_RAILWAY = bool(os.environ.get('RAILWAY_ENVIRONMENT_NAME') or os.environ.get('RAILWAY_PROJECT_ID'))
+
+# Allowed hosts configuration
+if IS_RAILWAY:
+    ALLOWED_HOSTS = ['*']  # Railway handles domain routing
+else:
+    ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 # Application definition
 DJANGO_APPS = [
@@ -68,12 +75,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'tecky_collections.wsgi.application'
 
-# Database
-DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default='sqlite:///db.sqlite3')
-    )
-}
+# Database configuration
+if IS_RAILWAY and os.environ.get('DATABASE_URL'):
+    # Railway PostgreSQL
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # Local development or fallback
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL', default='sqlite:///db.sqlite3')
+        )
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -99,10 +117,13 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles_build' / 'static'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+# WhiteNoise configuration for static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
@@ -111,107 +132,65 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Security settings for production
-if not DEBUG:
-    # Disable these settings that cause redirect loops on Railway
-    # Railway handles HTTPS at the proxy level
-    # SECURE_BROWSER_XSS_FILTER = True
-    # SECURE_CONTENT_TYPE_NOSNIFF = True
-    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    # SECURE_HSTS_SECONDS = 31536000
-    # SECURE_REDIRECT_EXEMPT = []
-    # SECURE_SSL_REDIRECT = True
-    # SESSION_COOKIE_SECURE = True
-    # CSRF_COOKIE_SECURE = True
-    pass
-
 # Login URLs
 LOGIN_URL = '/dashboard/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Vercel-specific settings
-if os.environ.get('VERCEL'):
+# Railway-specific settings
+if IS_RAILWAY:
     DEBUG = False
-    ALLOWED_HOSTS = ['*']  # Vercel handles this
     
-    # Use PostgreSQL on Vercel (recommended)
-    # You'll need to set up a database service like Neon, PlanetScale, or Supabase
-    if config('DATABASE_URL', default=None):
-        DATABASES['default'] = dj_database_url.config(
-            default=config('DATABASE_URL'),
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
+    # Security settings for Railway
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = False  # Railway handles SSL at proxy level
+    
+    # Session and CSRF settings
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # Logging configuration
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                'style': '{',
+            },
+        },
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose',
+            },
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'django.request': {
+                'handlers': ['console'],
+                'level': 'ERROR',
+                'propagate': False,
+            },
+        },
+    }
 
-# Heroku-specific settings
+# Heroku-specific settings (keeping for compatibility)
 if 'DYNO' in os.environ:
     DEBUG = False
-    ALLOWED_HOSTS = ['*']  # Heroku handles this
+    ALLOWED_HOSTS = ['*']
     
-    # Heroku automatically provides DATABASE_URL for PostgreSQL
     if os.environ.get('DATABASE_URL'):
         DATABASES['default'] = dj_database_url.config(
             default=os.environ.get('DATABASE_URL'),
             conn_max_age=600,
             conn_health_checks=True,
         )
-    
-    # Logging configuration for Heroku
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'handlers': {
-            'console': {
-                'class': 'logging.StreamHandler',
-            },
-        },
-        'root': {
-            'handlers': ['console'],
-        },
-        'loggers': {
-            'django': {
-                'handlers': ['console'],
-                'level': 'INFO',
-                'propagate': False,
-            },
-        },
-    }
-
-# Railway-specific settings
-if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID'):
-    DEBUG = False
-    ALLOWED_HOSTS = ['*']  # Railway handles this
-    
-    # Disable SSL redirect - Railway handles HTTPS at proxy level
-    SECURE_SSL_REDIRECT = False
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
-    # Railway automatically provides DATABASE_URL for PostgreSQL
-    if os.environ.get('DATABASE_URL'):
-        DATABASES['default'] = dj_database_url.config(
-            default=os.environ.get('DATABASE_URL'),
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
-    
-    # Logging configuration for Railway
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'handlers': {
-            'console': {
-                'class': 'logging.StreamHandler',
-            },
-        },
-        'root': {
-            'handlers': ['console'],
-        },
-        'loggers': {
-            'django': {
-                'handlers': ['console'],
-                'level': 'INFO',
-                'propagate': False,
-            },
-        },
-    }
