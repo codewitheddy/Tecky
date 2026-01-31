@@ -1,0 +1,55 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+DEPLOYMENT.md
+ADMIN_DASHBOARD.md
+RAILWAY_DEPLOYMENT.md
+VERCEL_DEPLOYMENT.md
+DASHBOARD_SETUP_COMPLETE.md
+
+# Environment files
+.env
+.env.local
+.env.railway
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+db.sqlite3
+*.sqlite3
+
+# Logs
+*.log
+
+# Cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Media files (will be handled by external storage in production)
+media/
+
+# Static files (will be collected during build)
+staticfiles/
+staticfiles_build/
+
+# Railway
+.railway/
+
+# Temporary files
+*.tmp
+*.bak
