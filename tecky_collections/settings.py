@@ -153,3 +153,24 @@ if os.environ.get('RAILWAY_ENVIRONMENT'):
             conn_max_age=600,
             conn_health_checks=True,
         )
+    
+    # Logging configuration for Railway
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'root': {
+            'handlers': ['console'],
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+        },
+    }
