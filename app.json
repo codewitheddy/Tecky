@@ -1,0 +1,41 @@
+{
+  "name": "Tecky Collections",
+  "description": "Professional tailoring business management system with modern admin dashboard",
+  "repository": "https://github.com/codewitheddy/Tecky",
+  "logo": "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/icons/scissors.svg",
+  "keywords": ["django", "tailoring", "admin", "dashboard", "business"],
+  "stack": "heroku-22",
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:mini"
+    }
+  ],
+  "env": {
+    "SECRET_KEY": {
+      "description": "Django secret key for security",
+      "generator": "secret"
+    },
+    "DEBUG": {
+      "description": "Debug mode",
+      "value": "False"
+    },
+    "ALLOWED_HOSTS": {
+      "description": "Allowed hosts",
+      "value": ".herokuapp.com"
+    }
+  },
+  "scripts": {
+    "postdeploy": "python manage.py createsuperuser --noinput --username admin --email admin@tecky.com || true && python manage.py setup_sample_data || true"
+  }
+}

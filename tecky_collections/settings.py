@@ -144,6 +144,40 @@ if os.environ.get('VERCEL'):
             conn_health_checks=True,
         )
 
+# Heroku-specific settings
+if 'DYNO' in os.environ:
+    DEBUG = False
+    ALLOWED_HOSTS = ['*']  # Heroku handles this
+    
+    # Heroku automatically provides DATABASE_URL for PostgreSQL
+    if os.environ.get('DATABASE_URL'):
+        DATABASES['default'] = dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    
+    # Logging configuration for Heroku
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'root': {
+            'handlers': ['console'],
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+        },
+    }
+
 # Railway-specific settings
 if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RAILWAY_PROJECT_ID'):
     DEBUG = False
